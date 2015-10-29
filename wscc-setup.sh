@@ -24,7 +24,6 @@ source library/helper
 check_root_access
 timer 15
 wscc_copy "/usr/share/wscc-commons"
-exit 1;
 
 # ------------------------------------------------------ REACTIVATE ROOT --------------------------------------------------------
 if [ ! -f /tmp/wscc-complete-reactivateroot ]; then
@@ -285,6 +284,8 @@ if [ ! -f /tmp/wscc-complete-integration ]; then
 			if [ "${wsccgroup}" != "" ]; then
 				echo -e "Add: \e[38;5;112mwsccgroup=${wsccgroup}\e[0m"
 				echo "wsccgroup=${wsccgroup}" >>/usr/share/wscc-commons/configs/wscc.conf
+			else
+				echo -e "\e[38;5;227m ...skipped\e[0m"
 			fi
 			echo ""
 			echo -e -n "Please enter a \e[38;5;227mclient name\e[0m (if this is a special client (eg. teamleader) and press [ENTER]: "
@@ -292,6 +293,8 @@ if [ ! -f /tmp/wscc-complete-integration ]; then
 			if [ "${wsccclient}" != "" ]; then
 				echo -e "Add: \e[38;5;112mwsccclient=${wsccclient}\e[0m"
 				echo "wsccclient=${wsccclient}" >>/usr/share/wscc-commons/configs/wscc.conf
+			else
+				echo -e "\e[38;5;227m ...skipped\e[0m"
 			fi
 
 			echo ""
@@ -300,6 +303,7 @@ if [ ! -f /tmp/wscc-complete-integration ]; then
 			# Setup the boot script
 			echo -e "Setup the wscc bootscript ...\e[38;5;112mdone!\e[0m"
 			cp /usr/share/wscc-commons/files/etc/init.d/wscc-boot /etc/init.d
+			rm /etc/rc2.d/S99wscc-boot
 			ln -s /etc/init.d/wscc-boot /etc/rc2.d/S99wscc-boot
 
 			# Download the SSL certificate
@@ -308,7 +312,8 @@ if [ ! -f /tmp/wscc-complete-integration ]; then
 			wget -O /etc/univention/ssl/ucsCA/CAcert.pem http://${ldap_master}/ucs-root-ca.crt
 
 			# Create an account and save the password
-			echo -e "\e[38;5;105m>> Create an account and save the password\e[0m"
+			echo -e "\e[38;5;105m>> Create an account and save the password\e[0m."
+			echo "You have to type in the DC Master password!"
 			password="$(tr -dc A-Za-z0-9_ </dev/urandom | head -c20)"
 			ssh root@${ldap_master} udm computers/ubuntu create \
 			    --position "cn=computers,${ldap_base}" \
@@ -319,60 +324,73 @@ if [ ! -f /tmp/wscc-complete-integration ]; then
 			chmod 0400 /etc/ldap.secret
 
 			# Create ldap.conf
+			echo ""
 			echo -e "\e[38;5;105m>> Create ldap.conf\e[0m"
-			bash univention/1create_conf_ldap.sh
+			bash /usr/share/wscc-commons/univention/1create_conf_ldap.sh
 
 			# Install SSSD based configuration
+			echo ""
 			echo -e "\e[38;5;105m>> Install SSSD based configuration\e[0m"
 			DEBIAN_FRONTEND=noninteractive apt-get -y install sssd libnss-sss libpam-sss libsss-sudo
 
 			# Create sssd.conf
+			echo ""
 			echo -e "\e[38;5;105m>> Create sssd.conf\e[0m"
-			bash univention/2create_conf_sssd.sh
+			bash /usr/share/wscc-commons/univention/2create_conf_sssd.sh
 
 			chmod 600 /etc/sssd/sssd.conf
 
 			# Install auth-client-config
+			echo ""
 			echo -e "\e[38;5;105m>> Install auth-client-config\e[0m"
 			DEBIAN_FRONTEND=noninteractive apt-get -y install auth-client-config
 
 			# Create an auth config profile for sssd
+			echo ""
 			echo -e "\e[38;5;105m>> Create an auth config profile for sssd\e[0m"
-			bash univention/3create_sssd_authprofile.sh
+			bash /usr/share/wscc-commons/univention/3create_sssd_authprofile.sh
 
 			auth-client-config -a -p sss
 
 			# Restart sssd
+			echo ""
 			echo -e "\e[38;5;105m>> Restart sssd\e[0m"
 			restart sssd
 
 			# Create ucs_mkhomedir
+			echo ""
 			echo -e "\e[38;5;105m>> Create ucs_mkhomedir\e[0m"
-			bash univention/4create_ucs_mkhomedir.sh
+			bash /usr/share/wscc-commons/univention/4create_ucs_mkhomedir.sh
 
 			# Perform pam-auth-update
-			echo -e "\e[38;5;105m>> Install pam-auth-update\e[0m"
+			echo ""
+			echo -e "\e[38;5;105m>> Force pam-auth-update\e[0m"
 			DEBIAN_FRONTEND=noninteractive pam-auth-update --force
 
 			# Add device entries to security group
+			echo ""
 			echo -e "\e[38;5;105m>> Add device entries to security group\e[0m"
 			echo '*;*;*;Al0000-2400;audio,cdrom,dialout,floppy,plugdev,adm' >>/etc/security/group.conf
 
 			# Add local entries to security group
+			echo ""
 			echo -e "\e[38;5;105m>> Add local entries to security group\e[0m"
-			bash univention/5add_locales_security_group.sh
+			bash /usr/share/wscc-commons/univention/5add_locales_security_group.sh
 
 			# Perform pam-auth-update
-			echo -e "\e[38;5;105m>> \e[0m"
+			echo ""
+			echo -e "\e[38;5;105m>> Init pam-auth-update\e[0m"
 			DEBIAN_FRONTEND=noninteractive pam-auth-update
 
 			# Add a field for a user name, disable user selection at the login screen
+			echo ""
 			echo -e "\e[38;5;105m>> Add a field for a user name, disable user selection at the login screen\e[0m"
-			bash univention/6add_username_field_lightdm.sh
+			bash /usr/share/wscc-commons/univention/6add_username_field_lightdm.sh
 
 			# Disable Guest user login at the login screen
+			echo ""
 			echo -e "\e[38;5;105m>> Disable Guest user login at the login screen\e[0m"
-			bash univention/7disable_guest_login_lightdm.sh
+			bash /usr/share/wscc-commons/univention/7disable_guest_login_lightdm.sh
 
 			echo -e "\e[38;5;112m...successfully installed LDAP integrategration\e[0m"
 		else
@@ -391,4 +409,5 @@ else
 	echo -e "\e[38;5;202m...skipping the integration setup\e[0m"
 fi
 
+# clean_this
 text_out
