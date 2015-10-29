@@ -412,5 +412,6 @@ fi
 ## cleanup and good bye
 scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 clean_this ${scriptdir}
+echo ""
 echo "$scriptdir ...cleaned"
 text_out
