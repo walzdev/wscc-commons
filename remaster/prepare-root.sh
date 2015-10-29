@@ -65,6 +65,20 @@ cp -R -v /usr/share/wscc-commons/remaster/data/usr/share/gnome-background-proper
 cp -R -v /usr/share/wscc-commons/remaster/data/usr/share/unity-greeter/* /usr/share/unity-greeter
 
 
+## clean crap from win
+dos2unix /usr/share/wscc-commons/*
+dos2unix /usr/share/wscc-commons/configs/*
+dos2unix /usr/share/wscc-commons/files/etc/init.d/*
+dos2unix /usr/share/wscc-commons/library/*
+dos2unix /usr/share/wscc-commons/remaster/*
+dos2unix /usr/share/wscc-commons/remaster/data/etc/*
+dos2unix /usr/share/wscc-commons/remaster/data/lib/plymouth/themes/ubuntu-logo/*
+dos2unix /usr/share/wscc-commons/remaster/data/lib/plymouth/themes/ubuntu-text/*
+dos2unix /usr/share/wscc-commons/univention/*
+echo ""
+echo ""
+echo -e "Clean files from win crap: \e[38;5;46m done\e[0m"
+
 echo ""
 echo ""
 echo -e "Remastering root: \e[38;5;46m done\e[0m"
