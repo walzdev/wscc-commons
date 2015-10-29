@@ -1,5 +1,5 @@
 #!/bin/bash
-# Set some environment variables
+# Set some environment variables (taken from http://docs.software-univention.de/domain-3.2.html)
 source /etc/univention/ucr_master
 
 cat >/etc/ldap/ldap.conf <<__EOF__
