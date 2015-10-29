@@ -1,0 +1,57 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          wscc-boot
+# Required-Start:    mountkernfs $local_fs urandom
+# Required-Stop:     $local_fs
+# Should-Start:      nfs-common
+# Default-Start:     2
+# Default-Stop:      0
+# Short-Description: WSCC initscript
+# Description:       Mount WSCS boot directory in WSCCs if exists
+### END INIT INFO
+##
+##
+## http://askubuntu.com/questions/290099/how-to-run-a-script-during-boot-as-root
+## http://askubuntu.com/questions/814/how-to-run-scripts-on-start-up
+##
+##
+
+wscctimestamp=`date +%Y-%m-%d-%H-%M`
+
+if [ -f /usr/share/wscc-commons/configs/wscc.conf ]; then
+	. /usr/share/wscc-commons/configs/wscc.conf
+
+	if [ "${master_ip}" != "" ]; then
+		## Prepare System
+		mkdir -p /usr/share/wscs-boot-scripts
+		mkdir -p /var/log/wscs-boot-scripts
+		echo -n "$wscctimestamp - $HOSTNAME - (NFSMOUNT) - " >>/var/log/wscs-boot-scripts/global.log
+		mount -t nfs ${master_ip}:/usr/share/wscs-boot-scripts /usr/share/wscs-boot-scripts &>>/var/log/wscs-boot-scripts/global.log
+
+		## Global script
+		echo -n "$wscctimestamp - $HOSTNAME - (BEGIN SCRIPT) - " >>/var/log/wscs-boot-scripts/global.log
+		/usr/share/wscs-boot-scripts/global.sh &>> /var/log/wscs-boot-scripts/global.log
+		echo -n "$wscctimestamp - $HOSTNAME - (END SCRIPT) - " >>/var/log/wscs-boot-scripts/global.log
+
+		## Group related script
+		if [ ${wsccgroup} ]; then
+			echo "$wscctimestamp - $HOSTNAME - (BEGIN SCRIPT) - " >>/var/log/wscs-boot-scripts/${wsccgroup}.log
+			/usr/share/wscs-boot-scripts/${wsccgroup}.sh &>> /var/log/wscs-boot-scripts/${wsccgroup}.log
+			echo "$wscctimestamp - $HOSTNAME - (END SCRIPT) - " >>/var/log/wscs-boot-scripts/${wsccgroup}.log
+		fi
+
+		## Client related script
+		if [ ${wsccclient} ]; then
+			echo -n "$wscctimestamp - $HOSTNAME - (BEGIN SCRIPT) - " >>/var/log/wscs-boot-scripts/${wsccclient}.log
+			/usr/share/wscs-boot-scripts/${wsccclient}.sh &>> /var/log/wscs-boot-scripts/${wsccclient}.log
+			echo -n "$wscctimestamp - $HOSTNAME - (END SCRIPT) - " >>/var/log/wscs-boot-scripts/${wsccclient}.log
+		fi
+
+		umount /usr/share/wscs-boot-scripts
+	else
+		echo "$wscctimestamp - $HOSTNAME - bootscript executed, but nothing done!" >>/var/log/wscs-boot-scripts/global.log
+		echo "caused on var 'master_ip=${master_ip}'" >>/var/log/wscs-boot-scripts/global.log
+	fi
+else
+	echo "$wscctimestamp - $HOSTNAME - Could not find any config file! ....skip wscc-boot" >>/var/log/wscs-boot-scripts/general.log
+fi
