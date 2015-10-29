@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper>
+    <name>Default</name>
+    <name xml:lang="en_GB">Default</name>
+    <name xml:lang="de">Standard</name>
+    <name xml:lang="de_DE">Standard</name>
+    <filename>/usr/share/backgrounds/wscc-default-final.png</filename>
+    <options>zoom</options>
+    <pcolor>#001326</pcolor>
+    <scolor>#001326</scolor>
+    <shade_type>solid</shade_type>
+  </wallpaper>
+</wallpapers>
