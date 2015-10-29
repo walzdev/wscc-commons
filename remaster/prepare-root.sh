@@ -45,6 +45,10 @@ apt-get update
 apt-get -y install numlockx vim owncloud-client
 echo "greeter-setup-script=/usr/bin/numlockx on" >> /usr/share/lightdm/lightdm.conf.d/50-unity-greeter.conf
 
+// Used to clean up files from win crap
+apt-get install -y dos2unix
+
+
 
 ## copy whole stuff from remaster/data in appropriate folders
 # etc
