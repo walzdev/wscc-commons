@@ -1,0 +1,51 @@
+function check_root_access()
+{
+	echo ""
+	echo -e "Currently performing as: \e[38;5;202m$USER\e[0m"
+
+	if [ ! -z "$SUDO_USER" ]; then
+		echo -e "Root access is: \e[38;5;46m GRANTED\e[0m"
+	else
+		echo -e "Root access is: \e[38;5;160m INVALID\e[0m"
+		echo -e "Use \e[38;5;175msudo\e[0m in front of the command to get root access"
+		exit 1;
+	fi
+}
+
+function text_out()
+{
+	if [ "$1" == "" ]; then
+		scr_color="180"
+	else
+		scr_color="$1"
+	fi
+
+	if [ "$2" == "" ]; then
+		scr_text="May the Force be with you, my young Padawan!"
+	else
+		scr_text="$2"
+	fi
+
+	echo ""
+	echo -e "[SCRIPT]: \e[38;5;${scr_color}m${scr_text}\e[0m"
+}
+
+function timer()
+{
+	# echo -e "Now executing \e[38;5;227m/usr/share/wscc-commons/wscc-setup.sh\e[0m"
+	echo ""
+	echo "Please wait or hit [Control] + C to abort!"
+	echo -e "\e[38;5;160mNote: If you cancel setup after the timer has been stopped,\e[0m"
+	echo -e "\e[38;5;160minstallation may be corrupt!\e[0m"
+	echo ""
+	sek="$1"
+	while [ "$sek" -ge 1 ]
+	do
+	   echo -n " => Setup starts in $sek seconds..."
+	   echo -n $'\r'
+	   sleep 1
+	   sek=$[$sek-1]
+	done
+
+	text_out 180 "May the Force be with you, my young Padawan!"
+}
