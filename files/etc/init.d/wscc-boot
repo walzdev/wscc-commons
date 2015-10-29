@@ -10,10 +10,8 @@
 # Description:       Mount WSCS boot directory in WSCCs if exists
 ### END INIT INFO
 ##
-##
 ## http://askubuntu.com/questions/290099/how-to-run-a-script-during-boot-as-root
 ## http://askubuntu.com/questions/814/how-to-run-scripts-on-start-up
-##
 ##
 
 wscctimestamp=`date +%Y-%m-%d-%H-%M`
