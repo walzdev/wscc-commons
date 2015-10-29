@@ -23,6 +23,8 @@ source library/helper
 
 check_root_access
 timer 15
+wscc_copy "/usr/share/wscc-commons"
+exit 1;
 
 # ------------------------------------------------------ REACTIVATE ROOT --------------------------------------------------------
 if [ ! -f /tmp/wscc-complete-reactivateroot ]; then
@@ -225,6 +227,7 @@ if [ ! -f /tmp/wscc-complete-installer ]; then
 	fi
 
 	touch /tmp/wscc-complete-installer
+	echo ""
 	echo -e "\e[38;5;112m...successfully installed applications.\e[0m"
 else
 	echo -e "\e[38;5;202m...skipping the installer\e[0m"
@@ -233,7 +236,7 @@ fi
 # ---------------------------------------------------- CHECK ENVIRONMENT ------------------------------------------------------
 echo ""
 echo ""
-echo "Checking for updates!"
+echo "Checking for DC (UCS/WSCS) integration!"
 if [ ! -f /tmp/wscc-complete-integration ]; then
 	echo -e "\e[38;5;87m...launching the environment integration setup\e[0m"
 	echo ""
