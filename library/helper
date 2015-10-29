@@ -53,8 +53,9 @@ function timer()
 function wscc_copy()
 {
 	mkdir -p $1
+	echo
 	echo -n "copy files to destination"
 	cp -R * $1
-	echo "\e[38;5;46m ...done!\e[0m"
+	echo -e "\e[38;5;46m ...done!\e[0m"
 	echo
 }
