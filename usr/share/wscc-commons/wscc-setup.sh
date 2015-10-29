@@ -186,15 +186,6 @@ if [ ! -f /tmp/wscc-complete-updater ]; then
 else
 	echo -e "\e[38;5;202m...skipping the updater\e[0m"
 fi
-exit 1;
-
-
-
-
-
-
-
-
 
 # --------------------------------------------------- INSTALL APPLICATIONS -----------------------------------------------------
 echo ""
@@ -396,3 +387,5 @@ if [ ! -f /tmp/wscc-complete-integration ]; then
 else
 	echo -e "\e[38;5;202m...skipping the integration setup\e[0m"
 fi
+
+text_out
