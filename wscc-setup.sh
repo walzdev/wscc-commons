@@ -409,5 +409,8 @@ else
 	echo -e "\e[38;5;202m...skipping the integration setup\e[0m"
 fi
 
-# clean_this
+## cleanup and good bye
+scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+clean_this ${scriptdir}
+echo "$scriptdir ...cleaned"
 text_out
