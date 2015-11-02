@@ -1,0 +1,443 @@
+#!/bin/bash
+# come from setup entry point
+clear
+echo "##########################################################"
+echo "#                                                        #"
+echo -e "#\e[38;5;87m WALZ.systems Corporate Client Setup\e[0m                    #"
+echo "# ------------------------------------------------------ #"
+echo "#                                                        #"
+echo "# This will install the WSCC - OS Patch on a clean       #"
+echo "# Ubuntu Desktop 14.04.3 LTS                             #"
+echo "#                                                        #"
+echo "# Works with:                                            #"
+echo "#     as SDC    >> (Standalone Desktop Client)           #"
+echo "#     with UCS  >> (Univention Corporate Server)         #"
+echo "#     with WSCS >> (WALZ.systems Corporate Server)       #"
+echo "#                                                        #"
+echo "# (c) 1997-2015 by WALZ.systems,                         #"
+echo "#                  devXive - research and development    #"
+echo "#                                                        #"
+echo "# Version: WSCC v.3.0                                    #"
+echo "#                                                        #"
+echo "##########################################################"
+source /usr/share/wscc-commons/library/helper
+timer 15
+# ------------------------------------------------------ COPY STUFF TO FOLDERS --------------------------------------------------------
+# lib
+cp -v /usr/share/wscc-commons/files/lib/plymouth/ubuntu_logo.png /lib/plymouth/ubuntu_logo.png
+cp -R -v /usr/share/wscc-commons/files/lib/plymouth/themes/ubuntu-logo/* /lib/plymouth/themes/ubuntu-logo
+cp -R -v /usr/share/wscc-commons/files/lib/plymouth/themes/ubuntu-text/* /lib/plymouth/themes/ubuntu-text
+
+# usr
+rm -R -v /usr/share/backgrounds/*
+cp -R -v /usr/share/wscc-commons/files/usr/share/backgrounds/* /usr/share/backgrounds
+cp -R -v /usr/share/wscc-commons/files/usr/share/gnome-background-properties/* /usr/share/gnome-background-properties
+cp -R -v /usr/share/wscc-commons/files/usr/share/unity-greeter/* /usr/share/unity-greeter
+
+
+# ------------------------------------------------------ REACTIVATE ROOT --------------------------------------------------------
+if [ ! -f /tmp/wscc-complete-reactivateroot ]; then
+	echo ""
+	echo "Do you wish to reactivate the root account for this client?"
+	echo "=> This includes: Access this client via eg. putty as root."
+	echo -e "\e[38;5;160mPlease note: For security reason root is disabled.\e[0m"
+	echo -e "\e[38;5;160mTherefore it is strongly not recommended!\e[0m"
+	echo ""
+	echo -n "Activate root now and grant ssh access? [y/N]: "
+	read -r -n 1 activateroot
+	if [ "$activateroot" == "y" ] || [ "$ucshostapply" == "Y" ]; then
+		echo ""
+		echo "You'll now set the password for user root"
+		passwd root
+		echo ""
+		echo "writing to filesystem..."
+		## Check if backup of original exists, else create a copy
+		if [ ! -f /etc/ssh/sshd_config.ORIG ]; then
+			echo -e "\e[38;5;46mCreate a backup of original files\e[0m"
+			echo -e "\e[38;5;46mMove /etc/ssh/sshd_config to /etc/ssh/sshd_config.ORIG\e[0m"
+			cp /etc/ssh/sshd_config /etc/ssh/sshd_config.ORIG
+		else
+			echo -e "\e[38;5;202mSkip backup of originals... file already exists\e[0m"
+		fi
+		cp /usr/share/wscc-commons/files/ssh/sshd_config /etc/ssh/sshd_config
+		chown root:root /etc/ssh/sshd_config
+		chmod 644 /etc/ssh/sshd_config
+		echo ""
+		echo -e "\e[38;5;227m...restart ssh service\e[0m"
+		service ssh restart
+		echo ""
+		echo -e "\e[38;5;46mUser root has been reactivated.\e[0m"
+		touch /tmp/wscc-complete-reactivateroot
+	else
+		echo -e "Reactivate root access ...\e[38;5;202mskipped\e[0m"
+	fi
+else
+	echo "You have been setup the root part earlier before!"
+	echo "If you want to set it up again,"
+	echo "please delete '/tmp/wscc-complete-reactivateroot' and restart setup"
+fi
+
+# -------------------------------------------------- UNINSTALL APPLICATIONS ----------------------------------------------------
+echo ""
+echo ""
+echo "Checking for software that we don't need!"
+if [ ! -f /tmp/wscc-complete-uninstaller ]; then
+	echo -e "\e[38;5;87m...launching the uninstaller\e[0m"
+	# TODO: Test following to uninstall
+	#	transmission-gtk
+	#	unity-webapps-common
+	#	gnome-user-share
+	#	gnome-bluetooth
+	#	webaccounts-extension-common
+	#	unity-control-center
+	#	modemmanager
+	#	ubuntu-desktop
+	#	indicator-bluetooth
+	#	xul-ext-webaccounts
+	#	unity-control-center-signon
+	#	?? oxideqt-codecs
+
+	# Games
+	#	aisleriot								# AIP: guile-2.0-libs libgc1c2
+	#	gnome-mahjongg								# AIP: N/A
+	#	gnome-sudoku								# AIP: N/A
+	#	gnome-mines								# AIP: N/A
+	#	gnomine									# AIP: N/A				// uninstralled with gnome-mines
+	echo ""
+	echo ""
+	echo -e "\e[38;5;170mUninstall Games\e[0m"
+	apt-get purge -y aisleriot gnome-mahjongg gnome-sudoku gnome-mines gnomine
+
+	# Single applications
+	#	brasero				= CD/DVD burning software			# Auto Installed Packages (AIP): brasero-cdrkit
+	#	cheese				= Webcam automation				# AIP: gnome-video-effects
+	#	landscape-client-ui-install	= GUI Package to install Landscape Client	# AIP: N/A
+	#	xul-ext-ubufox			= Ubuntu amendment extension for Firefox	# AIP: N/A
+	#	unity-scope-gdrive		= Google Drive Integration			# AIP: N/A
+	echo ""
+	echo ""
+	echo -e "Uninstall brasero \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y brasero
+	echo ""
+	echo ""
+	echo -e "Uninstall cheese \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y cheese
+	echo ""
+	echo ""
+	echo -e "\e[38;5;170mUninstall landscape-client-ui-install\e[0m"
+	apt-get purge -y landscape-client-ui-install
+	echo ""
+	echo ""
+	echo -e "\e[38;5;170mUninstall xul-ext-ubufox\e[0m"
+	apt-get purge -y xul-ext-ubufox
+	echo ""
+	echo ""
+	echo -e "\e[38;5;170mUninstall unity-scope-gdrive\e[0m"
+	apt-get purge -y unity-scope-gdrive
+
+	# Application to play video incl. extensions
+	# 	totem									# AIP: gir1.2-totem-1.0 gir1.2-totem-plparser-1.0 libtotem0 totem-common
+	echo ""
+	echo ""
+	echo -e "Uninstall totem and its extensions \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y totem totem-mozilla totem-plugins
+
+	# Application to manage and viewing your photos incl. extensions
+	# 	shotwell								# AIP: libexiv2-12 libgexiv2-2 libraw9
+	echo ""
+	echo ""
+	echo -e "Uninstall shotwell and its extensions \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y shotwell shotwell-common
+
+	# eMail client incl. extensions
+	# 	thunderbird								# AIP: N/A
+	echo ""
+	echo ""
+	echo -e "Uninstall thunderbird and its extensions \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y thunderbird thunderbird-gnome-support thunderbird-locale-en thunderbird-locale-de thunderbird-locale-en-us
+
+	# Application to play audio incl. extensions
+	# 	rhythmbox								# AIP: brasero-common dvd+rw-tools gir1.2-gnomekeyring-1.0 gir1.2-rb-3.0 gir1.2-secret-1 growisofs libbrasero-media3-1 libburn4 libdmapsharing-3.0-2 libgmime-2.6-0 libgpod-common libgpod4 libisofs6 libjte1 liblircclient0 librhythmbox-core8 libsgutils2-2 libtotem-plparser18 media-player-info python3-mako python3-markupsafe rhythmbox-data
+	echo ""
+	echo ""
+	echo -e "Uninstall rhythmbox and its extensions \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y rhythmbox rhythmbox-plugin-zeitgeist rhythmbox-plugin-cdrecorder rhythmbox-mozilla rhythmbox-plugin-magnatune rhythmbox-plugins
+
+	# Application to access remote workspaces incl. extensions
+	# 	remmina									# AIP: libfreerdp-plugins-standard libfreerdp1 libssh-4 libvncserver0 remmina-common
+	echo ""
+	echo ""
+	echo -e "Uninstall remmina and its extensions \e[38;5;170m...skipped\e[0m"
+	# apt-get purge -y remmina remmina-plugin-vnc remmina-plugin-rdp
+
+	# Remove unneeded packages and extensions
+	echo ""
+	echo ""
+	echo -e "\e[38;5;170mCleanup remaining extensions and fragments\e[0m"
+	apt-get autoremove -y
+
+	touch /tmp/wscc-complete-uninstaller
+	echo -e "\e[38;5;112m...successfully uninstalled software packages.\e[0m"
+else
+	echo -e "\e[38;5;202m...skipping the uninstaller\e[0m"
+fi
+
+# ------------------------------------------------------ INSTALL UPDATE --------------------------------------------------------
+echo ""
+echo ""
+echo "Checking for updates!"
+if [ ! -f /tmp/wscc-complete-updater ]; then
+	echo -e "\e[38;5;87m...launching the updater\e[0m"
+	echo ""
+	echo -e "\e[38;5;227mPerforming complete system updates. This may take some time!\e[0m"
+	echo -e "\e[38;5;227m(based on your internet connection)\e[0m"
+	apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get autoremove -y
+	touch /tmp/wscc-complete-updater
+	echo -e "\e[38;5;112m...successfully installed updates.\e[0m"
+else
+	echo -e "\e[38;5;202m...skipping the updater\e[0m"
+fi
+
+# --------------------------------------------------- INSTALL APPLICATIONS -----------------------------------------------------
+echo ""
+echo ""
+echo "Checking for applications that should be installed!"
+if [ ! -f /tmp/wscc-complete-installer ]; then
+	echo -e "\e[38;5;87m...launching the installer\e[0m"
+	echo ""
+	echo -e "\e[38;5;227mPerforming software installations. This may take some time!\e[0m"
+	echo -e "\e[38;5;227m(based on your internet connection)\e[0m"
+
+	# Install numlockx and enable it for lightdm (on login screen)
+	echo -e "\e[38;5;112mInstall and activate numlockx (used to activate num lock key on lightdm login screen)\e[0m"
+	apt-get install -y numlockx
+
+	echo "greeter-setup-script=/usr/bin/numlockx on" >> /usr/share/lightdm/lightdm.conf.d/50-unity-greeter.conf
+
+	# Install NFS-Commons
+	echo -e "\e[38;5;112mInstall nfs-common (need to mount nfs directories)\e[0m"
+	apt-get install -y nfs-common
+
+	# Install VIM-Editor
+	echo -e "\e[38;5;112mInstall vim (a nice and colored texteditor)\e[0m"
+	apt-get install -y vim
+
+	# Install OwnCloud Client if not yet installed
+	if [ ! -f /usr/share/wscc-commons/apps/owncloud/Release.key ]; then
+		echo -e "\e[38;5;112mSet owncloud repository and Install owncloud-client (owncloud linux client)\e[0m"
+		wget http://download.opensuse.org/repositories/isv:ownCloud:desktop/xUbuntu_14.04/Release.key
+		apt-key add - < Release.key
+		mkdir -p /usr/share/wscc-commons/apps/owncloud
+		mv Release.key /usr/share/wscc-commons/apps/owncloud
+		sh -c "echo 'deb http://download.opensuse.org/repositories/isv:/ownCloud:/desktop/xUbuntu_14.04/ /' >> /etc/apt/sources.list.d/owncloud-client.list"
+		apt-get update
+		apt-get install owncloud-client -y
+	else
+		echo -e "Installing OwnCloud Client \e[38;5;112m...skipped, already exists\e[0m"
+	fi
+
+	# Install filesystem other used tools
+	echo -e "\e[38;5;112mInstall tools for filesystem and install/update usb-creator\e[0m"
+	apt-get install -y dos2unix mbr usb-creator-gtk
+
+	touch /tmp/wscc-complete-installer
+	echo ""
+	echo -e "\e[38;5;112m...successfully installed applications.\e[0m"
+else
+	echo -e "\e[38;5;202m...skipping the installer\e[0m"
+fi
+
+# ---------------------------------------------------- CHECK ENVIRONMENT ------------------------------------------------------
+echo ""
+echo ""
+echo "Checking for DC (UCS/WSCS) integration!"
+if [ ! -f /tmp/wscc-complete-integration ]; then
+	echo -e "\e[38;5;87m...launching the environment integration setup\e[0m"
+	echo ""
+	echo -e -n "\e[38;5;227mDo you whish to integrate this client with UCS or WSCS? [Y/n]:\e[0m "
+	read -r -n 1 ucsintegration
+	if [ "$ucsintegration" == "y" ] || [ "$ucsintegration" == "Y" ] || [ "$ucsintegration" == "" ]; then
+		## Catch some config vars
+		echo ""
+		echo "Type in the ip-address of the UCS/WSCS DC Master."
+		echo -e "Info: If you follow the WS standard guide, this would be \e[38;5;227m10.10.1.1\e[0m"
+		echo ""
+		echo -n "Type in the host address and press [ENTER]: "
+		read -r dcmasterip
+		echo -n "Are you sure that your ip address is $dcmasterip? [Y/n]: "
+		read -r -n 1 ucshostapply
+		if [ "$ucshostapply" == "y" ] || [ "$ucshostapply" == "Y" ] || [ "$ucshostapply" == "" ]; then
+			export MASTER_IP=$dcmasterip
+			echo ""
+			echo ""
+			echo "Connecting to DC Master to catch config vars."
+			echo "You may first have to trust the connection to your DC Master,"
+			echo "after that, type in password for root user of DC Master below!"
+			mkdir -p /etc/univention
+			ssh root@"${MASTER_IP}" ucr shell | grep -v ^hostname= >/etc/univention/ucr_master
+			echo "master_ip=${MASTER_IP}" >>/etc/univention/ucr_master
+			chmod 660 /etc/univention/ucr_master
+
+			# Set some environment variables
+			ldap_master=""
+			ldap_base=""
+			# shellcheck disable=SC1091
+			source /etc/univention/ucr_master
+
+			echo "${MASTER_IP} ${ldap_master}" >>/etc/hosts
+			echo ""
+			mkdir -p /usr/share/wscc-commons/configs
+			cp /etc/univention/ucr_master /usr/share/wscc-commons/configs/wscc.conf
+			echo "master_ip=${MASTER_IP}" >>/usr/share/wscc-commons/configs/wscc.conf
+
+			# Determine the group or client
+			echo ""
+			echo "Gather more informations"
+			echo "Note: This is used to execute the correct scripts on DC Master (eg. accounting)! Left it empty will not use any boot scripts from DC Master"
+			echo -e -n "Please enter a \e[38;5;227mgroup or section name\e[0m for this client and press [ENTER]: "
+			read -r wsccgroup
+			if [ "${wsccgroup}" != "" ]; then
+				echo -e "Add: \e[38;5;112mwsccgroup=${wsccgroup}\e[0m"
+				echo "wsccgroup=${wsccgroup}" >>/usr/share/wscc-commons/configs/wscc.conf
+			else
+				echo -e "\e[38;5;227m ...skipped\e[0m"
+			fi
+			echo ""
+			echo -e -n "Please enter a \e[38;5;227mclient name\e[0m (if this is a special client (eg. teamleader) and press [ENTER]: "
+			read -r wsccclient
+			if [ "${wsccclient}" != "" ]; then
+				echo -e "Add: \e[38;5;112mwsccclient=${wsccclient}\e[0m"
+				echo "wsccclient=${wsccclient}" >>/usr/share/wscc-commons/configs/wscc.conf
+			else
+				echo -e "\e[38;5;227m ...skipped\e[0m"
+			fi
+
+			echo ""
+			echo -e "Writing config files ...\e[38;5;112mdone!\e[0m"
+
+			# Setup the boot script
+			echo -e "Setup the wscc bootscript ...\e[38;5;112mdone!\e[0m"
+			cp /usr/share/wscc-commons/files/etc/init.d/wscc-boot /etc/init.d
+			rm /etc/rc2.d/S99wscc-boot
+			ln -s /etc/init.d/wscc-boot /etc/rc2.d/S99wscc-boot
+
+			# Download the SSL certificate
+			echo -e "\e[38;5;105m>> Download the SSL certificate\e[0m"
+			mkdir -p /etc/univention/ssl/ucsCA/
+			wget -O /etc/univention/ssl/ucsCA/CAcert.pem http://${ldap_master}/ucs-root-ca.crt
+
+			# Create an account and save the password
+			echo -e "\e[38;5;105m>> Create an account and save the password\e[0m."
+			echo "You have to type in the DC Master password!"
+			password="$(tr -dc A-Za-z0-9_ </dev/urandom | head -c20)"
+			ssh root@${ldap_master} udm computers/ubuntu create \
+			    --position "cn=computers,${ldap_base}" \
+			    --set name="$(hostname)" --set password="${password}" \
+			    --set operatingSystem="$(lsb_release -is)" \
+			    --set operatingSystemVersion="$(lsb_release -rs)"
+			printf '%s' "$password" >/etc/ldap.secret
+			chmod 0400 /etc/ldap.secret
+
+			# Create ldap.conf
+			echo ""
+			echo -e "\e[38;5;105m>> Create ldap.conf\e[0m"
+			bash /usr/share/wscc-commons/univention/1create_conf_ldap.sh
+
+			# Install SSSD based configuration
+			echo ""
+			echo -e "\e[38;5;105m>> Install SSSD based configuration\e[0m"
+			DEBIAN_FRONTEND=noninteractive apt-get -y install sssd libnss-sss libpam-sss libsss-sudo
+
+			# Create sssd.conf
+			echo ""
+			echo -e "\e[38;5;105m>> Create sssd.conf\e[0m"
+			bash /usr/share/wscc-commons/univention/2create_conf_sssd.sh
+
+			chmod 600 /etc/sssd/sssd.conf
+
+			# Install auth-client-config
+			echo ""
+			echo -e "\e[38;5;105m>> Install auth-client-config\e[0m"
+			DEBIAN_FRONTEND=noninteractive apt-get -y install auth-client-config
+
+			# Create an auth config profile for sssd
+			echo ""
+			echo -e "\e[38;5;105m>> Create an auth config profile for sssd\e[0m"
+			bash /usr/share/wscc-commons/univention/3create_sssd_authprofile.sh
+
+			auth-client-config -a -p sss
+
+			# Restart sssd
+			echo ""
+			echo -e "\e[38;5;105m>> Restart sssd\e[0m"
+			restart sssd
+
+			# Create ucs_mkhomedir
+			echo ""
+			echo -e "\e[38;5;105m>> Create ucs_mkhomedir\e[0m"
+			bash /usr/share/wscc-commons/univention/4create_ucs_mkhomedir.sh
+
+			# Perform pam-auth-update
+			echo ""
+			echo -e "\e[38;5;105m>> Force pam-auth-update\e[0m"
+			DEBIAN_FRONTEND=noninteractive pam-auth-update --force
+
+			# Add device entries to security group
+			echo ""
+			echo -e "\e[38;5;105m>> Add device entries to security group\e[0m"
+			echo '*;*;*;Al0000-2400;audio,cdrom,dialout,floppy,plugdev,adm' >>/etc/security/group.conf
+
+			# Add local entries to security group
+			echo ""
+			echo -e "\e[38;5;105m>> Add local entries to security group\e[0m"
+			bash /usr/share/wscc-commons/univention/5add_locales_security_group.sh
+
+			# Perform pam-auth-update
+			echo ""
+			echo -e "\e[38;5;105m>> Init pam-auth-update\e[0m"
+			DEBIAN_FRONTEND=noninteractive pam-auth-update
+
+			# Add a field for a user name, disable user selection at the login screen
+			echo ""
+			echo -e "\e[38;5;105m>> Add a field for a user name, disable user selection at the login screen\e[0m"
+			bash /usr/share/wscc-commons/univention/6add_username_field_lightdm.sh
+
+			# Disable Guest user login at the login screen
+			echo ""
+			echo -e "\e[38;5;105m>> Disable Guest user login at the login screen\e[0m"
+			bash /usr/share/wscc-commons/univention/7disable_guest_login_lightdm.sh
+
+			echo -e "\e[38;5;112m...successfully installed LDAP integrategration\e[0m"
+		else
+			echo ""
+			echo "...abort"
+			echo -e "\e[38;5;196mTo complete the installation, you have to start over again!\e[0m"
+			exit 1;
+		fi
+	else
+		echo ""
+		echo -e "\e[38;5;202mSkipping UCS/WSCS setup!\e[0m"
+	fi
+	touch /tmp/wscc-complete-integration
+	echo -e "\e[38;5;112m...successfully integrated.\e[0m"
+else
+	echo -e "\e[38;5;202m...skipping the integration setup\e[0m"
+fi
+
+# --------------------------------------------------- FINISCHING INSTALLER -----------------------------------------------------
+echo ""
+echo ""
+echo "Finishing installer"
+echo -e "\e[38;5;87m...launching the finisher\e[0m"
+
+killself
+scriptdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo ""
+echo "$scriptdir ...cleaned"
+
+echo ""
+echo ""
+echo -e "Finishing installer ...\e[38;5;46mdone\e[0m"
+
+## good bye
+text_out
