@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper>
+    <name>Standard</name>
+    <filename>/usr/share/backgrounds/wscc-lst24-edition.png</filename>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#001326</pcolor>
+    <scolor>#001326</scolor>
+  </wallpaper>
+</wallpapers>
