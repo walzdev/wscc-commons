@@ -22,12 +22,10 @@ echo "##########################################################"
 source library/helper
 check_root_access
 # ----------------------------------------------------- INSTALL CORE LIB -------------------------------------------------------
-echo ""
-echo ""
-echo "Install core lib ..."
-echo ""
+msg_pure "Install core lib ..."
 wscc_clean_this "/usr/share/wscc-commons"
 wscc_copy "/usr/share/wscc-commons"
 wscc_convert "/usr/share/wscc-commons"
-echo -e "Install core lib ...\e[38;5;46mdone\e[0m"
+msg_success "Install core lib ..." "done!"
+msg_note "" "starting the installer"
 bash /usr/share/wscc-commons/library/installer
