@@ -34,7 +34,6 @@ cp -R -v /usr/share/wscc-commons/files/usr/share/backgrounds/* /usr/share/backgr
 cp -R -v /usr/share/wscc-commons/files/usr/share/gnome-background-properties/* /usr/share/gnome-background-properties
 cp -R -v /usr/share/wscc-commons/files/usr/share/unity-greeter/* /usr/share/unity-greeter
 
-
 # ------------------------------------------------------ REACTIVATE ROOT --------------------------------------------------------
 if [ ! -f /tmp/wscc-complete-reactivateroot ]; then
 	echo ""
