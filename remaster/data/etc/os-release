@@ -1,9 +1,0 @@
-NAME="Ubuntu"
-VERSION="14.04.3 LTS, Trusty Tahr"
-ID=ubuntu
-ID_LIKE=debian
-PRETTY_NAME="WALZ.systems Corporate Client 3"
-VERSION_ID="14.04"
-HOME_URL="http://systems.walz.ag/wscc"
-SUPPORT_URL="http://support.walz.ag/"
-BUG_REPORT_URL="http://github.com/walzdev/wscc-commons/"
