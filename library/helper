@@ -60,14 +60,34 @@ function wscc_copy()
 	echo
 }
 
-function clean_this()
+function wscc_convert()
+{
+	echo
+	echo -n "convert files ..."
+	for item in $1/*; do
+	    	if [[ -d $item ]]; then
+			cd "$item"
+			dos2unix -k *
+		else
+			dos2unix -k *
+		fi
+	done
+	echo -e "\e[38;5;46m done!\e[0m"
+	echo
+}
+
+function wscc_clean_this()
 {
 	if [ "$1" != "" ]; then
-		rm -R $1/configs
 		rm -R $1/files
 		rm -R $1/library
 		rm -R $1/remaster
 		rm -R $1/univention
 		rm -R $1/wscc-setup.sh
 	fi
+}
+
+function killself()
+{
+	rm -R /tmp/wscc-commons*
 }
