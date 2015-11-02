@@ -1,2 +1,6 @@
-Rebuild the UCS config on startup
-Rebuild the WSCS config on startup
+CHECK:
+files/etc/skel/*
+files/etc/issue
+files/etc/issue.net
+files/etc/lsb-release
+files/etc/os-release
